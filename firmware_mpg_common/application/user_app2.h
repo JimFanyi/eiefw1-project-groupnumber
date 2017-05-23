@@ -7,7 +7,7 @@ Header file for user_app2.c
 **********************************************************************************************************************/
 
 #ifndef __USER_APP2_H
-#define __USER_APP2_H
+#define __USER_APP2_H  u8 au8Instructions[] = "Enter commands as LED-ONTIME-OFFTIME and press Enter\n\rTime is in milliseconds, max 100 commands\n\rLED colors: R,O,Y,G,C,B,P,W\n\rExample: R-100-200(Red on at100ms and off at 200ms)\n\rPress Enter on blank line to end\n\r");
 
 /**********************************************************************************************************************
 Type Definitions

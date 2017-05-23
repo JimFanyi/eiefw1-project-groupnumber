@@ -121,6 +121,48 @@ void UserApp1RunActiveState(void)
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* Private functions                                                                                                  */
 /*--------------------------------------------------------------------------------------------------------------------*/
+static void PrintStartMenu(void)
+{
+  u8 au8Star[50];
+  u8 au8Menu[] = "Press 1 to program LED command sequence\n\rPress 2 to show current USER program\n\r";
+  u8 u8i;
+  
+  for(u8i = 0; u8i < 47; u8i++)
+  {
+    au8Star[u8i] = '*';
+  }
+  au8Star[47] = '\n';
+  au8Star[48] = '\r';
+  au8Star[49] = '\0';
+  
+  DebugPrintf(au8Star);
+  DebugPrintf(au8Menu);
+  DebugPrintf(au8Star);
+  
+}
+
+static void PrintMenu1(void)
+{
+  u8 au8Instructions[] = "Enter commands as LED-ONTIME-OFFTIME and press Enter\n\rTime is in milliseconds, max 100 commands\n\rLED colors: R,O,Y,G,C,B,P,W\n\rExample: R-100-200(Red on at100ms and off at 200ms)\n\rPress Enter on blank line to end\n\r";
+  DebugPrintf("\n\r\n\r");
+  DebugPrintf(au8Instructions);
+}
+
+static u8 ReadCommand(void)
+{
+  u8 au8CommandInput[1];
+  u8 au8CommandUseful[1];
+  
+  DebugScanf(au8CommandInput);
+  
+  if (au8CommandInput[0] != '\0')
+  {
+    au8CommandUseful[0] = au8CommandInput[0];
+    return au8CommandUseful[0];
+  }
+  else
+    return 0;
+}
 
 
 /**********************************************************************************************************************
@@ -129,9 +171,25 @@ State Machine Function Definitions
 
 /*-------------------------------------------------------------------------------------------------------------------*/
 /* Wait for input */
+
 static void UserApp1SM_Idle(void)
 {
+  static bool bIsProgramStarting = TRUE;
   
+  if (bIsProgramStarting)
+  {
+    PrintStartMenu();
+    bIsProgramStarting = FALSE;
+  }
+  
+  if(ReadCommand() == '1')
+  {
+    PrintMenu1();
+  }
+  else if(ReadCommand() == '2')
+  {
+    DebugPrintf("NO");
+  }
 } /* end UserApp1SM_Idle() */
                       
             
