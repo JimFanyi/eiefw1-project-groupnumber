@@ -150,7 +150,7 @@ static void PrintMenu1(void)
 
 static u8 ReadCommand(void)
 {
-  u8 au8CommandInput[1];
+  static u8 au8CommandInput[1];
   u8 au8CommandUseful[1];
   
   DebugScanf(au8CommandInput);
@@ -164,6 +164,111 @@ static u8 ReadCommand(void)
     return 0;
 }
 
+static void ReadProgram(void)
+{
+  u8 au8ProgramInput[1];
+  static u8 u8StepCounter = 1;
+  static u8 u8EnterCounter = 0;
+  static u32 u32OFFTime = 0;
+  static u32 u32ONTime = 0;
+  static bool bHasONTIMEBeenInputted = FALSE;
+  static bool bHasOFFTIMEBeenInputted = FALSE;
+  
+  DebugScanf(au8ProgramInput);
+  
+  if (au8ProgramInput[0] != '\0')
+  {
+    
+    if(au8ProgramInput[0] == 'R' && u8StepCounter == 1)
+    {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u8EnterCounter = 0;
+      u8StepCounter++;
+    }
+    else if(au8ProgramInput[0] == 'O' && u8StepCounter == 1)
+    {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == 'Y' && u8StepCounter == 1)
+    {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == 'G' && u8StepCounter == 1)
+    {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == 'C' && u8StepCounter == 1)
+    {
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == 'B' && u8StepCounter == 1)
+    {
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == 'P' && u8StepCounter == 1)
+    {
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == 'W' && u8StepCounter == 1)
+    {
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == '-' && u8StepCounter == 2)
+    {
+      u8EnterCounter = 0;
+      u8StepCounter++;
+    }
+    else if(au8ProgramInput[0] >= '0' && au8ProgramInput[0] <= '9'&& u8StepCounter == 3)
+    {
+      
+      u32ONTime = u32ONTime*10 + au8ProgramInput[0] - 48;
+      bHasONTIMEBeenInputted = TRUE;  
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] == '-' && bHasONTIMEBeenInputted)
+    {
+      u8StepCounter++;
+      u8EnterCounter = 0;
+    }
+    else if(au8ProgramInput[0] >= '0' && au8ProgramInput[0] <= '9' && u8StepCounter == 4)
+    {
+     
+      u32OFFTime = u32OFFTime*10 + au8ProgramInput[0] - 48;
+      u8EnterCounter = 0;
+      bHasOFFTIMEBeenInputted = TRUE;
+    }
+    else if(au8ProgramInput[0] == '\r' && bHasOFFTIMEBeenInputted)
+    {
+      u8EnterCounter++;
+      if(u8EnterCounter == 1)
+      {
+        DebugPrintf("\n\r");
+        u8StepCounter = 1;
+        u32OFFTime = 0;
+        u32ONTime = 0;
+        
+      }
+      if(u8EnterCounter == 2)
+      {
+        DebugPrintNumber(u32OFFTime);
+        u8EnterCounter = 0;
+      }
+    }
+    
+    
+    
+  }
+  
+  
+}
+
 
 /**********************************************************************************************************************
 State Machine Function Definitions
@@ -175,20 +280,31 @@ State Machine Function Definitions
 static void UserApp1SM_Idle(void)
 {
   static bool bIsProgramStarting = TRUE;
+  static bool bHasMenu12BeenShowed = FALSE;
   
   if (bIsProgramStarting)
   {
     PrintStartMenu();
     bIsProgramStarting = FALSE;
   }
-  
-  if(ReadCommand() == '1')
+  if (bHasMenu12BeenShowed == FALSE)
   {
-    PrintMenu1();
+    if(ReadCommand() == '1' && bHasMenu12BeenShowed == FALSE)
+    {
+      PrintMenu1();
+      bHasMenu12BeenShowed = TRUE;
+    }
+    else if(ReadCommand() == '2'&& bHasMenu12BeenShowed == FALSE)
+    {
+      DebugPrintf("NO");
+      bHasMenu12BeenShowed = TRUE;
+    }
   }
-  else if(ReadCommand() == '2')
+  
+  
+  if(bHasMenu12BeenShowed)
   {
-    DebugPrintf("NO");
+    ReadProgram();
   }
 } /* end UserApp1SM_Idle() */
                       
