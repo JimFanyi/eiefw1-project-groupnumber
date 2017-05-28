@@ -208,9 +208,9 @@ Promises:
 - If the program is wrong, an error information will be given to the user.
 */
 
-static void ReadProgram(void)
+static bool ReadProgram(void)
 {
-  u8 au8ProgramInput[1];
+  u8 au8ProgramInput[1] = "\0";
   /*Counter Definition*/
   static u8 u8StepCounter = 1;   //The counter of current step, to determine what command should be inputted.
   static u8 u8EnterCounter = 0;  //The counter of the times the enter has been pressed, to determine whether the user programming has endded.
@@ -224,6 +224,7 @@ static void ReadProgram(void)
   static bool bHasOFFTIMEBeenInputted = FALSE;
   static bool bTheFirstEnterHasBeenPressed = FALSE;
   static bool bEnterCorrect = TRUE;
+  static bool bProgrammingEndded = FALSE;
   
   static u8 u8Color = 0;
   
@@ -247,49 +248,92 @@ static void ReadProgram(void)
       u32OFFTime = 0;
       u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
       
       u8StepCounter++;
-      u8Color = RED;
     }
     
     else if(au8ProgramInput[0] == 'O' && u8StepCounter == 1)
     {
-      bHasONTIMEBeenInputted = FALSE;
+     bHasONTIMEBeenInputted = FALSE;
       bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
+      
+      u8StepCounter++;
     }
     
     else if(au8ProgramInput[0] == 'Y' && u8StepCounter == 1)
     {
       bHasONTIMEBeenInputted = FALSE;
       bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
+      
+      u8StepCounter++;
     }
     else if(au8ProgramInput[0] == 'G' && u8StepCounter == 1)
     {
-      bHasONTIMEBeenInputted = FALSE;
+     bHasONTIMEBeenInputted = FALSE;
       bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
+      
+      u8StepCounter++;
     }
     
     else if(au8ProgramInput[0] == 'C' && u8StepCounter == 1)
     {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
+      
+      u8StepCounter++;
     }
     
     else if(au8ProgramInput[0] == 'B' && u8StepCounter == 1)
     {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
+      
+      u8StepCounter++;
     }
     
     else if(au8ProgramInput[0] == 'P' && u8StepCounter == 1)
     {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
+      
+      u8StepCounter++;
     }
     
     else if(au8ProgramInput[0] == 'W' && u8StepCounter == 1)
     {
+      bHasONTIMEBeenInputted = FALSE;
+      bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      bEnterCorrect = TRUE;
+      
+      u8StepCounter++;
     }
     
     else if(au8ProgramInput[0] == '-' && u8StepCounter == 2)
@@ -327,32 +371,37 @@ static void ReadProgram(void)
         if(u8EnterCounter == 1)
         {
           DebugPrintf("\n\r");
-          CommandInfo.eLED = u8Color;
-          CommandInfo.bOn = FALSE;
-          CommandInfo.u32Time = u32ONTime;
           //LedDisplayAddCommand(USER_LIST,CommandInfo);
           u8StepCounter = 1;
           bTheFirstEnterHasBeenPressed = TRUE;
           bHasOFFTIMEBeenInputted = FALSE;
-        
         }
+        
+        
+        
         if(u8EnterCounter == 2)
         {
           DebugPrintNumber(u32OFFTime);
+          DebugPrintf("\n\r");
           u8EnterCounter = 0;
           bTheFirstEnterHasBeenPressed = FALSE;
+          bProgrammingEndded = TRUE;
         }
        }
       else
       {
         DebugPrintf("\n\rInvalid Command,Please enter as C-ON-OFF\n\r");
+        u8StepCounter = 1;
       }
     }
     
     else
     {
       bEnterCorrect = FALSE;
+      u8StepCounter = 1;
     }
+    
+    return bProgrammingEndded;
     
     
   }
@@ -372,13 +421,14 @@ static void UserApp1SM_Idle(void)
 {
   static bool bIsProgramStarting = TRUE;
   static bool bHasMenu12BeenShowed = FALSE;
+  static bool bProgrammingCompleted = FALSE;
   
-  if (bIsProgramStarting)
+  if (bIsProgramStarting || bProgrammingCompleted)
   {
     PrintStartMenu();
     bIsProgramStarting = FALSE;
   }
-  if (bHasMenu12BeenShowed == FALSE)
+  if (bHasMenu12BeenShowed == FALSE )
   {
     if(ReadCommand() == '1' && bHasMenu12BeenShowed == FALSE)
     {
@@ -395,7 +445,7 @@ static void UserApp1SM_Idle(void)
   
   if(bHasMenu12BeenShowed)
   {
-    ReadProgram();
+   bProgrammingCompleted = ReadProgram();
   }
 } /* end UserApp1SM_Idle() */
                       
