@@ -121,6 +121,16 @@ void UserApp1RunActiveState(void)
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* Private functions                                                                                                  */
 /*--------------------------------------------------------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------------------------------------------------------
+Function: PrintStartMenu
+
+Description:When the program starts, show a menu with two choices.
+
+Requires: Only show the menu when the program starts.
+
+Promises: A menu with two choices will be shown when the program starts.
+*/
 static void PrintStartMenu(void)
 {
   u8 au8Star[50];
@@ -141,13 +151,32 @@ static void PrintStartMenu(void)
   
 }
 
+/*--------------------------------------------------------------------------------------------------------------------
+Function: PrintMenu1
+
+Description: When the user input 1,show clear instruction of how to enter a string
+
+Requires: The user choosed 1 when the program starts
+
+Promises: A clear instruction of how to enter a string will be shown.
+*/
 static void PrintMenu1(void)
 {
-  u8 au8Instructions[] = "Enter commands as LED-ONTIME-OFFTIME and press Enter\n\rTime is in milliseconds, max 100 commands\n\rLED colors: R,O,Y,G,C,B,P,W\n\rExample: R-100-200(Red on at100ms and off at 200ms)\n\rPress Enter on blank line to end\n\r";
+  u8 au8Instructions[] = 
+     "Enter commands as LED-ONTIME-OFFTIME and press Enter\n\rTime is in milliseconds, max 100 commands\n\rLED colors: R,O,Y,G,C,B,P,W\n\rExample: R-100-200(Red on at100ms and off at 200ms)\n\rPress Enter on blank line to end\n\r";
   DebugPrintf("\n\r\n\r");
   DebugPrintf(au8Instructions);
 }
 
+/*--------------------------------------------------------------------------------------------------------------------
+Function: ReadCommand
+
+Description: Read the command '1' or '2'
+
+Requires: no requires.
+
+Promises: The '1' or '2' the user inputted will be read.
+*/
 static u8 ReadCommand(void)
 {
   static u8 au8CommandInput[1];
@@ -164,34 +193,72 @@ static u8 ReadCommand(void)
     return 0;
 }
 
+/*--------------------------------------------------------------------------------------------------------------------
+Function: ReadProgram.
+
+Description: 
+Read the program the user has inputted, and determine if the program is correct. If correct, 
+send the information to the command list. If wrong, show the error information and give the correct example.
+
+Requires:
+-The menu for the user to choose '1' or '2' has been shown.
+
+Promises:
+- As long as the program is correct, the information will be send to the command list.
+- If the program is wrong, an error information will be given to the user.
+*/
+
 static void ReadProgram(void)
 {
   u8 au8ProgramInput[1];
-  static u8 u8StepCounter = 1;
-  static u8 u8EnterCounter = 0;
-  static u32 u32OFFTime = 0;
-  static u32 u32ONTime = 0;
+  /*Counter Definition*/
+  static u8 u8StepCounter = 1;   //The counter of current step, to determine what command should be inputted.
+  static u8 u8EnterCounter = 0;  //The counter of the times the enter has been pressed, to determine whether the user programming has endded.
+  
+  /*ONTIME & OFFTIME STORAGE*/
+  static u32 u32OFFTime = 0;    //a temp storage to store the ontime the user has entered.
+  static u32 u32ONTime = 0;     //a temp storage to store the offtime the user has entered. 
+  
+  /*bool variable definition*/
   static bool bHasONTIMEBeenInputted = FALSE;
   static bool bHasOFFTIMEBeenInputted = FALSE;
+  static bool bTheFirstEnterHasBeenPressed = FALSE;
+  static bool bEnterCorrect = TRUE;
   
-  DebugScanf(au8ProgramInput);
+  static u8 u8Color = 0;
   
+  LedCommandType CommandInfo; //a temp struct to store the command info.
+  
+  DebugScanf(au8ProgramInput); //Monitor the input stream every 1ms.
+  
+
+ /*When the user has inputted something, then do the tasks in the "if".*/
   if (au8ProgramInput[0] != '\0')
   {
-    
+   /*The correct command include color, '-', ontime and off time, and they must be arranged in a certain order.*/
     if(au8ProgramInput[0] == 'R' && u8StepCounter == 1)
     {
+      /*--------------------------------------------------------------------------------------
+      When the user inputs the color, we regard it as the start of a command, so we initialize 
+      all the counters and bool variables that may have been changed in the former command.
+      */
       bHasONTIMEBeenInputted = FALSE;
       bHasOFFTIMEBeenInputted = FALSE;
+      u32OFFTime = 0;
+      u32ONTime = 0;
       u8EnterCounter = 0;
+      
       u8StepCounter++;
+      u8Color = RED;
     }
+    
     else if(au8ProgramInput[0] == 'O' && u8StepCounter == 1)
     {
       bHasONTIMEBeenInputted = FALSE;
       bHasOFFTIMEBeenInputted = FALSE;
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] == 'Y' && u8StepCounter == 1)
     {
       bHasONTIMEBeenInputted = FALSE;
@@ -204,39 +271,46 @@ static void ReadProgram(void)
       bHasOFFTIMEBeenInputted = FALSE;
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] == 'C' && u8StepCounter == 1)
     {
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] == 'B' && u8StepCounter == 1)
     {
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] == 'P' && u8StepCounter == 1)
     {
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] == 'W' && u8StepCounter == 1)
     {
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] == '-' && u8StepCounter == 2)
     {
       u8EnterCounter = 0;
       u8StepCounter++;
     }
+    
     else if(au8ProgramInput[0] >= '0' && au8ProgramInput[0] <= '9'&& u8StepCounter == 3)
-    {
-      
+    { 
       u32ONTime = u32ONTime*10 + au8ProgramInput[0] - 48;
       bHasONTIMEBeenInputted = TRUE;  
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] == '-' && bHasONTIMEBeenInputted)
     {
       u8StepCounter++;
       u8EnterCounter = 0;
     }
+    
     else if(au8ProgramInput[0] >= '0' && au8ProgramInput[0] <= '9' && u8StepCounter == 4)
     {
      
@@ -244,24 +318,41 @@ static void ReadProgram(void)
       u8EnterCounter = 0;
       bHasOFFTIMEBeenInputted = TRUE;
     }
-    else if(au8ProgramInput[0] == '\r' && bHasOFFTIMEBeenInputted)
+    
+    else if(au8ProgramInput[0] == '\r')
     {
-      u8EnterCounter++;
-      if(u8EnterCounter == 1)
+      if(bHasOFFTIMEBeenInputted && bEnterCorrect || bTheFirstEnterHasBeenPressed)
       {
-        DebugPrintf("\n\r");
-        u8StepCounter = 1;
-        u32OFFTime = 0;
-        u32ONTime = 0;
+        u8EnterCounter++;
+        if(u8EnterCounter == 1)
+        {
+          DebugPrintf("\n\r");
+          CommandInfo.eLED = u8Color;
+          CommandInfo.bOn = FALSE;
+          CommandInfo.u32Time = u32ONTime;
+          //LedDisplayAddCommand(USER_LIST,CommandInfo);
+          u8StepCounter = 1;
+          bTheFirstEnterHasBeenPressed = TRUE;
+          bHasOFFTIMEBeenInputted = FALSE;
         
-      }
-      if(u8EnterCounter == 2)
+        }
+        if(u8EnterCounter == 2)
+        {
+          DebugPrintNumber(u32OFFTime);
+          u8EnterCounter = 0;
+          bTheFirstEnterHasBeenPressed = FALSE;
+        }
+       }
+      else
       {
-        DebugPrintNumber(u32OFFTime);
-        u8EnterCounter = 0;
+        DebugPrintf("\n\rInvalid Command,Please enter as C-ON-OFF\n\r");
       }
     }
     
+    else
+    {
+      bEnterCorrect = FALSE;
+    }
     
     
   }
