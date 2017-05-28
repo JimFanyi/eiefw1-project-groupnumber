@@ -224,6 +224,7 @@ static bool ReadProgram(void)
   static bool bHasONTIMEBeenInputted = FALSE;
   static bool bHasOFFTIMEBeenInputted = FALSE;
   static bool bTheFirstEnterHasBeenPressed = FALSE;
+  static bool bColorEntered = FALSE;
   static bool bEnterCorrect = TRUE; //a bool variable to check if the inputments is right.
   bool bProgrammingEndded = FALSE;
   
@@ -250,6 +251,7 @@ static bool ReadProgram(void)
       u32ONTime = 0;
       u8EnterCounter = 0;
       bEnterCorrect = TRUE;
+      bColorEntered = TRUE;
       
       u8StepCounter++;
     }
@@ -403,6 +405,22 @@ static bool ReadProgram(void)
       u8StepCounter = 1;
     }
     
+    else if(au8ProgramInput[0] = ' ')
+    {
+      if(u8StepCounter == 1)
+      {
+        u8flag = 1;
+      }
+      
+      if(u8StepCounter == 2)
+      {
+        u8flag = 2
+      }
+      
+      if(u8StepCounter == 3)
+      
+    }
+    
     return bProgrammingEndded;
     
     
@@ -424,6 +442,9 @@ static void UserApp1SM_Idle(void)
   static bool bIsProgramStarting = TRUE;
   static bool bHasMenu12BeenShowed = FALSE;
   static bool bProgrammingCompleted = FALSE;
+  static bool bMenu1HasBeenShowed = FALSE;
+  static bool  bHasMenu2BeenShowed = FALSE;
+  static u8 au8Command[1];
   
   if (bIsProgramStarting || bProgrammingCompleted)
   {
@@ -431,24 +452,34 @@ static void UserApp1SM_Idle(void)
     bIsProgramStarting = FALSE;
     bHasMenu12BeenShowed = FALSE;
     bProgrammingCompleted = FALSE;
+    bMenu1HasBeenShowed = FALSE;
   }
-  if (bHasMenu12BeenShowed == FALSE )
+  if (bHasMenu12BeenShowed == FALSE || bHasMenu2BeenShowed)
   {
-    if(ReadCommand() == '1' && bHasMenu12BeenShowed == FALSE)
+    au8Command[0] = ReadCommand();
+    if(au8Command[0] == '1' && bHasMenu12BeenShowed == FALSE)
     {
       PrintMenu1();
       bHasMenu12BeenShowed = TRUE;
+      bMenu1HasBeenShowed = TRUE;
       bProgrammingCompleted = FALSE;
     }
-    else if(ReadCommand() == '2'&& bHasMenu12BeenShowed == FALSE)
+    else if(au8Command[0] == '2' && bHasMenu12BeenShowed == FALSE)
     {
       DebugPrintf("NO");
       bHasMenu12BeenShowed = TRUE;
+      bHasMenu2BeenShowed = TRUE;
+    }
+    else if(au8Command[0] == '\r' && bHasMenu2BeenShowed)
+    {
+      bHasMenu2BeenShowed = FALSE;
+      bIsProgramStarting = TRUE;
+      DebugPrintf("\n\r\n\r");
     }
   }
   
   
-  if(bHasMenu12BeenShowed)
+  if(bMenu1HasBeenShowed)
   {
    bProgrammingCompleted = ReadProgram();
   }
