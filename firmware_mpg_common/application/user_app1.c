@@ -179,7 +179,7 @@ Promises: The '1' or '2' the user inputted will be read.
 */
 static u8 ReadCommand(void)
 {
-  static u8 au8CommandInput[1];
+  static u8 au8CommandInput[1] = '\0';
   u8 au8CommandUseful[1];
   
   DebugScanf(au8CommandInput);
@@ -187,6 +187,7 @@ static u8 ReadCommand(void)
   if (au8CommandInput[0] != '\0')
   {
     au8CommandUseful[0] = au8CommandInput[0];
+    au8CommandInput[0] = '\0';
     return au8CommandUseful[0];
   }
   else
@@ -223,8 +224,8 @@ static bool ReadProgram(void)
   static bool bHasONTIMEBeenInputted = FALSE;
   static bool bHasOFFTIMEBeenInputted = FALSE;
   static bool bTheFirstEnterHasBeenPressed = FALSE;
-  static bool bEnterCorrect = TRUE;
-  static bool bProgrammingEndded = FALSE;
+  static bool bEnterCorrect = TRUE; //a bool variable to check if the inputments is right.
+  bool bProgrammingEndded = FALSE;
   
   static u8 u8Color = 0;
   
@@ -255,7 +256,7 @@ static bool ReadProgram(void)
     
     else if(au8ProgramInput[0] == 'O' && u8StepCounter == 1)
     {
-     bHasONTIMEBeenInputted = FALSE;
+      bHasONTIMEBeenInputted = FALSE;
       bHasOFFTIMEBeenInputted = FALSE;
       u32OFFTime = 0;
       u32ONTime = 0;
@@ -375,6 +376,7 @@ static bool ReadProgram(void)
           u8StepCounter = 1;
           bTheFirstEnterHasBeenPressed = TRUE;
           bHasOFFTIMEBeenInputted = FALSE;
+          bProgrammingEndded = FALSE;
         }
         
         
@@ -427,6 +429,8 @@ static void UserApp1SM_Idle(void)
   {
     PrintStartMenu();
     bIsProgramStarting = FALSE;
+    bHasMenu12BeenShowed = FALSE;
+    bProgrammingCompleted = FALSE;
   }
   if (bHasMenu12BeenShowed == FALSE )
   {
@@ -434,6 +438,7 @@ static void UserApp1SM_Idle(void)
     {
       PrintMenu1();
       bHasMenu12BeenShowed = TRUE;
+      bProgrammingCompleted = FALSE;
     }
     else if(ReadCommand() == '2'&& bHasMenu12BeenShowed == FALSE)
     {
